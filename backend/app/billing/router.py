@@ -177,9 +177,11 @@ def _invoice_detail(invoice: Invoice) -> InvoiceDetail:
     detail = InvoiceDetail.model_validate(invoice)
     return detail.model_copy(
         update={
+            # QR только для неоплаченных выставленных квитанций — защита от двойной оплаты.
             "payment_qr": (
                 payment_qr_payload(invoice, company)
-                if invoice.status != InvoiceStatus.DRAFT and invoice.total_due > 0
+                if invoice.status in (InvoiceStatus.ISSUED, InvoiceStatus.PARTIALLY_PAID)
+                and invoice.total_due > 0
                 else None
             ),
         }

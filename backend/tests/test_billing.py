@@ -101,6 +101,7 @@ async def test_full_billing_cycle(
     assert paid.status_code == 201, paid.text
     august = (await client.get(f"/api/v1/invoices/{august_id}", headers=headers)).json()
     assert (august["status"], august["paid_amount"]) == ("partially_paid", "1000.00")
+    assert august["payment_qr"] is not None
 
     # --- Сентябрь: показаний нет, истории мало — норматив ---
     await client.post("/api/v1/billing/run", json={"period": "2026-09"}, headers=headers)
@@ -148,6 +149,8 @@ async def test_full_billing_cycle(
         i["period"]: (i["status"], i["paid_amount"])
         for i in (await client.get("/api/v1/invoices", headers=headers)).json()["items"]
     }
+    paid_august = (await client.get(f"/api/v1/invoices/{august_id}", headers=headers)).json()
+    assert paid_august["payment_qr"] is None  # оплачена — QR не показываем
     assert statuses == {
         "2026-10-01": ("draft", "0.00"),
         "2026-09-01": ("paid", "2216.35"),
