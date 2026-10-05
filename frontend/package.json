@@ -10,7 +10,8 @@
     "lint": "eslint .",
     "typecheck": "tsc -b",
     "test": "vitest run",
-    "gen:api": "openapi-typescript openapi.json -o src/api/schema.d.ts --default-non-nullable false"
+    "gen:api": "openapi-typescript openapi.json -o src/api/schema.d.ts --default-non-nullable false",
+    "build:pages": "tsc -b && VITE_DEMO=true vite build --base=${PAGES_BASE:-/zalllluk/} && cp dist/index.html dist/404.html"
   },
   "dependencies": {
     "@ant-design/icons": "^5.6.1",

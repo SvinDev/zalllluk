@@ -34,6 +34,9 @@ const ProfilePage = lazy(() => import('@/pages/ProfilePage'))
 
 const OFFICE = ['admin', 'manager', 'accountant'] as const
 
+// На GitHub Pages приложение живёт в подкаталоге (/<repo>/) — учитываем это в маршрутах.
+const basename = import.meta.env.BASE_URL.replace(/\/$/, '') || '/'
+
 const router = createBrowserRouter([
   { path: '/login', element: <LoginPage /> },
   {
@@ -67,7 +70,7 @@ const router = createBrowserRouter([
       { path: '*', element: <NotFoundPage /> },
     ],
   },
-])
+], { basename })
 
 const queryClient = new QueryClient({
   defaultOptions: {

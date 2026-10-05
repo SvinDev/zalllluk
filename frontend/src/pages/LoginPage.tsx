@@ -1,9 +1,11 @@
-import { LockOutlined, MailOutlined } from '@ant-design/icons'
-import { Alert, Button, Card, Flex, Form, Input, Typography } from 'antd'
+import { LockOutlined, LoginOutlined, MailOutlined } from '@ant-design/icons'
+import { Alert, Button, Card, Divider, Flex, Form, Input, List, Typography } from 'antd'
 import { useState } from 'react'
 import { Navigate, useLocation, useNavigate } from 'react-router'
 
 import { useAuth } from '@/auth/useAuth'
+import { DEMO_ACCOUNTS, DEMO_PASSWORD, IS_DEMO } from '@/demo/accounts'
+import { roleLabels } from '@/lib/labels'
 
 type Values = { email: string; password: string }
 
@@ -38,7 +40,7 @@ export function LoginPage() {
     >
       <Card style={{ width: '100%', maxWidth: 400 }}>
         <Flex vertical align="center" gap={4} style={{ marginBottom: 24 }}>
-          <img src="/favicon.svg" width={48} height={48} alt="" />
+          <img src={`${import.meta.env.BASE_URL}favicon.svg`} width={48} height={48} alt="" />
           <Typography.Title level={3} style={{ margin: '8px 0 0' }}>
             УК Онлайн
           </Typography.Title>
@@ -56,6 +58,35 @@ export function LoginPage() {
             Войти
           </Button>
         </Form>
+        {IS_DEMO && (
+          <>
+            <Divider plain>Демо: войти одним кликом</Divider>
+            <List
+              size="small"
+              dataSource={DEMO_ACCOUNTS}
+              renderItem={(account) => (
+                <List.Item
+                  actions={[
+                    <Button
+                      key="login"
+                      size="small"
+                      icon={<LoginOutlined />}
+                      disabled={submitting}
+                      onClick={() => onFinish({ email: account.email, password: DEMO_PASSWORD })}
+                    >
+                      Войти
+                    </Button>,
+                  ]}
+                >
+                  <List.Item.Meta title={roleLabels[account.role]} description={account.hint} />
+                </List.Item>
+              )}
+            />
+            <Typography.Paragraph type="secondary" style={{ fontSize: 12, marginBottom: 0 }}>
+              Демо работает без сервера: API эмулируется в браузере, изменения видны только вам.
+            </Typography.Paragraph>
+          </>
+        )}
       </Card>
     </Flex>
   )

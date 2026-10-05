@@ -21,7 +21,14 @@ const auth: Middleware = {
   },
 }
 
-export const fetchClient = createFetchClient<paths>({ baseUrl: '' })
+// Демо-сборка (GitHub Pages) работает без бэкенда: запросы обслуживает эмулятор API
+// в браузере. Флаг подставляется при сборке, в обычный бандл эмулятор не попадает.
+const demoFetch = async (request: Request) => (await import('@/demo/server')).handle(request)
+
+export const fetchClient = createFetchClient<paths>({
+  baseUrl: '',
+  fetch: import.meta.env.VITE_DEMO === 'true' ? demoFetch : undefined,
+})
 fetchClient.use(auth)
 
 export const api = createClient(fetchClient)
