@@ -5,6 +5,7 @@ from app.core.database import Base
 from app.housing.models import Apartment, Building, apartment_residents
 from app.integrations.models import ApiKey, MeterDataSource
 from app.meters.models import Meter, MeterReading
+from app.tickets.models import Ticket, TicketComment
 from app.users.models import User
 
 __all__ = [
@@ -19,6 +20,8 @@ __all__ = [
     "MeterReading",
     "Payment",
     "Tariff",
+    "Ticket",
+    "TicketComment",
     "User",
     "apartment_residents",
 ]
