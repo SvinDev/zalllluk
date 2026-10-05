@@ -9,11 +9,13 @@ from app.api import api_router
 from app.core.config import get_settings
 from app.core.database import SessionFactory, engine
 from app.core.errors import register_error_handlers
+from app.integrations.scheduler import meter_sync_worker
 
 
 @asynccontextmanager
 async def lifespan(_: FastAPI) -> AsyncIterator[None]:
-    yield
+    async with meter_sync_worker():
+        yield
     await engine.dispose()
 
 

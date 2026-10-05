@@ -1,6 +1,7 @@
 """Минимальные фабрики тестовых данных: создают объекты напрямую через ORM."""
 
 import itertools
+from datetime import datetime
 from decimal import Decimal
 
 from sqlalchemy import insert
@@ -8,6 +9,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.security import create_access_token, hash_password
 from app.housing.models import Apartment, Building, apartment_residents
+from app.meters.models import Meter, MeterKind, MeterReading, ReadingSource
 from app.users.models import User, UserRole
 
 PASSWORD = "password123"
@@ -69,3 +71,33 @@ async def make_apartment(
             insert(apartment_residents).values(apartment_id=apartment.id, user_id=resident.id)
         )
     return apartment
+
+
+async def make_meter(
+    session: AsyncSession,
+    apartment: Apartment | None = None,
+    kind: MeterKind = MeterKind.COLD_WATER,
+    **fields: object,
+) -> Meter:
+    apartment = apartment or await make_apartment(session)
+    n = next(_seq)
+    values: dict[str, object] = {"serial_number": f"SN-{n:06d}", **fields}
+    meter = Meter(apartment_id=apartment.id, kind=kind, **values)
+    session.add(meter)
+    await session.flush()
+    return meter
+
+
+async def make_reading(
+    session: AsyncSession,
+    meter: Meter,
+    value: str | Decimal,
+    taken_at: datetime,
+    source: ReadingSource = ReadingSource.STAFF,
+) -> MeterReading:
+    reading = MeterReading(
+        meter_id=meter.id, value=Decimal(value), taken_at=taken_at, source=source
+    )
+    session.add(reading)
+    await session.flush()
+    return reading
