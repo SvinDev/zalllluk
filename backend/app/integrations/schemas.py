@@ -1,7 +1,7 @@
 from datetime import datetime
 from typing import Annotated, Literal
 
-from pydantic import BaseModel, Field, HttpUrl
+from pydantic import BaseModel, ConfigDict, Field, HttpUrl
 
 from app.core.schemas import Schema
 from app.integrations.models import ProviderKind
@@ -60,6 +60,8 @@ class DataSourceRead(Schema):
 
 
 class SyncResult(BaseModel):
+    model_config = ConfigDict(json_schema_serialization_defaults_required=True)
+
     source_id: int
     status: Literal["ok", "partial", "error"]
     report: IngestReport | None = None

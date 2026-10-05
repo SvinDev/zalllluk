@@ -47,7 +47,12 @@ class VisitRead(Schema):
 
 class PassRead(Schema):
     # Статус читается из ORM-свойства effective_status, но собрать схему можно и по имени.
-    model_config = ConfigDict(from_attributes=True, validate_by_name=True, validate_by_alias=True)
+    model_config = ConfigDict(
+        from_attributes=True,
+        validate_by_name=True,
+        validate_by_alias=True,
+        json_schema_serialization_defaults_required=True,
+    )
 
     id: int
     code: str
