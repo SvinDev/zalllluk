@@ -1,0 +1,1 @@
+import{r}from"./antd-mmTguGZC.js";function p(n=20){const[a,o]=r.useState(1),[e,u]=r.useState(n),i=g=>({current:a,pageSize:e,total:g??0,showSizeChanger:!0,showTotal:t=>`Всего: ${t}`,onChange:(t,s)=>{o(s!==e?1:t),u(s)}});return{query:{limit:e,offset:(a-1)*e},table:i,reset:()=>o(1)}}export{p as u};

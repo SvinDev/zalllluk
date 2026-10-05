@@ -1,0 +1,1 @@
+import{j as e,e as t}from"./index-CDcQ-iNa.js";import{K as o}from"./antd-mmTguGZC.js";function i({error:r}){return r?e.jsx(o,{type:"error",showIcon:!0,message:"Не удалось загрузить данные",description:t(r),style:{marginBottom:16}}):null}export{i as Q};
