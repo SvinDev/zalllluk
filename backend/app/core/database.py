@@ -30,6 +30,10 @@ class Base(DeclarativeBase):
 
 
 class TimestampMixin:
+    # Серверные значения (created_at/updated_at) забираем через RETURNING сразу,
+    # иначе в async-режиме их ленивое чтение упадёт с MissingGreenlet.
+    __mapper_args__: ClassVar[dict[str, Any]] = {"eager_defaults": True}
+
     created_at: Mapped[datetime] = mapped_column(server_default=func.now())
     updated_at: Mapped[datetime] = mapped_column(server_default=func.now(), onupdate=func.now())
 

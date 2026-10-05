@@ -29,9 +29,24 @@ def page_params(
     return PageParams(limit=limit, offset=offset)
 
 
+async def count_rows(session: AsyncSession, stmt: Select[Any]) -> int:
+    total = await session.scalar(select(func.count()).select_from(stmt.order_by(None).subquery()))
+    return total or 0
+
+
 async def paginate(
     session: AsyncSession, stmt: Select[Any], params: PageParams
 ) -> tuple[list[Any], int]:
-    total = await session.scalar(select(func.count()).select_from(stmt.order_by(None).subquery()))
+    """Страница ORM-объектов (первая колонка выборки) и общее количество."""
+    total = await count_rows(session, stmt)
     rows = await session.scalars(stmt.limit(params.limit).offset(params.offset))
-    return list(rows.unique()), total or 0
+    return list(rows.unique()), total
+
+
+async def paginate_rows(
+    session: AsyncSession, stmt: Select[Any], params: PageParams
+) -> tuple[list[Any], int]:
+    """Как paginate, но возвращает строки целиком — для выборок с вычисляемыми колонками."""
+    total = await count_rows(session, stmt)
+    result = await session.execute(stmt.limit(params.limit).offset(params.offset))
+    return list(result.all()), total

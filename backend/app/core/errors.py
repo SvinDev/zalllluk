@@ -1,5 +1,10 @@
+import logging
+
 from fastapi import FastAPI, Request, status
 from fastapi.responses import JSONResponse
+from sqlalchemy.exc import IntegrityError
+
+logger = logging.getLogger(__name__)
 
 
 class AppError(Exception):
@@ -48,4 +53,16 @@ def register_error_handlers(app: FastAPI) -> None:
             status_code=exc.status_code,
             content={"detail": exc.message, "code": exc.code},
             headers=headers,
+        )
+
+    @app.exception_handler(IntegrityError)
+    async def _handle_integrity_error(_: Request, exc: IntegrityError) -> JSONResponse:
+        # Сервисы проверяют уникальность заранее; сюда попадают гонки и нарушения FK.
+        logger.warning("Integrity error: %s", exc.orig)
+        return JSONResponse(
+            status_code=status.HTTP_409_CONFLICT,
+            content={
+                "detail": "Операция конфликтует с существующими данными",
+                "code": "integrity_error",
+            },
         )

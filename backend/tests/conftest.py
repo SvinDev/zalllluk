@@ -17,6 +17,8 @@ from sqlalchemy.pool import NullPool
 from app.core.database import get_session
 from app.main import app
 from app.models import Base
+from app.users.models import User, UserRole
+from tests.factories import make_user
 
 
 @pytest.fixture(scope="session")
@@ -61,3 +63,28 @@ async def client(session: AsyncSession) -> AsyncIterator[AsyncClient]:
     async with AsyncClient(transport=transport, base_url="http://test") as http:
         yield http
     app.dependency_overrides.clear()
+
+
+@pytest.fixture
+async def admin(session: AsyncSession) -> User:
+    return await make_user(session, UserRole.ADMIN, email="admin@example.com")
+
+
+@pytest.fixture
+async def manager(session: AsyncSession) -> User:
+    return await make_user(session, UserRole.MANAGER)
+
+
+@pytest.fixture
+async def accountant(session: AsyncSession) -> User:
+    return await make_user(session, UserRole.ACCOUNTANT)
+
+
+@pytest.fixture
+async def guard(session: AsyncSession) -> User:
+    return await make_user(session, UserRole.SECURITY)
+
+
+@pytest.fixture
+async def resident(session: AsyncSession) -> User:
+    return await make_user(session, UserRole.RESIDENT)
