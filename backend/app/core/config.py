@@ -1,6 +1,6 @@
 from functools import lru_cache
 from typing import Annotated, Literal
-from zoneinfo import ZoneInfo
+from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
 from pydantic import Field, field_validator, model_validator
 from pydantic_settings import BaseSettings, NoDecode, SettingsConfigDict
@@ -67,7 +67,10 @@ class Settings(BaseSettings):
     @field_validator("timezone")
     @classmethod
     def _known_timezone(cls, value: str) -> str:
-        ZoneInfo(value)  # бросит исключение на неизвестной зоне
+        try:
+            ZoneInfo(value)
+        except (ZoneInfoNotFoundError, ValueError) as exc:
+            raise ValueError(f"Неизвестный часовой пояс: {value}") from exc
         return value
 
     @property
@@ -76,7 +79,8 @@ class Settings(BaseSettings):
 
     @model_validator(mode="after")
     def _production_guard(self) -> "Settings":
-        if self.environment == "production" and self.secret_key == _DEFAULT_SECRET:
+        insecure = self.secret_key == _DEFAULT_SECRET or "change-me" in self.secret_key.lower()
+        if self.environment == "production" and insecure:
             raise ValueError("В production необходимо задать собственный SECRET_KEY")
         return self
 
