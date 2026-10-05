@@ -4,7 +4,7 @@ from typing import Annotated
 from fastapi import APIRouter, Depends, Query, Response, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.auth.deps import CurrentUser, ManagerUser, SessionDep, StaffUser
+from app.auth.deps import HouseholdUser, ManagerUser, SessionDep, StaffUser
 from app.core.pagination import Page, PageParams, page_params, paginate, paginate_rows
 from app.housing.service import resident_apartment_ids
 from app.meters import service
@@ -37,7 +37,7 @@ async def _meters_with_last_reading(session: AsyncSession, meters: list[Meter]) 
 @router.get("/meters", response_model=Page[MeterRead], summary="Счётчики")
 async def list_meters(
     session: SessionDep,
-    user: CurrentUser,
+    user: HouseholdUser,
     page: Annotated[PageParams, Depends(page_params)],
     apartment_id: int | None = None,
     building_id: int | None = None,
@@ -81,7 +81,7 @@ async def create_meter(session: SessionDep, user: ManagerUser, data: MeterCreate
 
 
 @router.get("/meters/{meter_id}", response_model=MeterRead, summary="Счётчик")
-async def get_meter(session: SessionDep, user: CurrentUser, meter_id: int) -> MeterRead:
+async def get_meter(session: SessionDep, user: HouseholdUser, meter_id: int) -> MeterRead:
     meter = await service.get_meter_for_user(session, user, meter_id)
     return (await _meters_with_last_reading(session, [meter]))[0]
 
@@ -111,7 +111,7 @@ async def delete_meter(session: SessionDep, user: ManagerUser, meter_id: int) ->
 )
 async def list_meter_readings(
     session: SessionDep,
-    user: CurrentUser,
+    user: HouseholdUser,
     meter_id: int,
     page: Annotated[PageParams, Depends(page_params)],
 ) -> Page[ReadingRead]:
@@ -131,14 +131,16 @@ async def list_meter_readings(
     summary="Передать показания",
 )
 async def submit_reading(
-    session: SessionDep, user: CurrentUser, meter_id: int, data: ReadingCreate
+    session: SessionDep, user: HouseholdUser, meter_id: int, data: ReadingCreate
 ) -> ReadingRead:
     meter = await service.get_meter_for_user(session, user, meter_id)
     reading = await service.add_reading(
         session,
         meter,
         value=data.value,
-        taken_at=data.taken_at,
+        # Житель передаёт показания «на сейчас»: задним числом можно было бы
+        # перекинуть расход между уже начисленными периодами.
+        taken_at=data.taken_at if user.is_staff else None,
         source=ReadingSource.STAFF if user.is_staff else ReadingSource.RESIDENT,
         submitted_by=user,
     )

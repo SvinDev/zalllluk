@@ -409,3 +409,9 @@ async def test_resident_cannot_see_foreign_invoice(
     await session.flush()
     response = await client.get(f"/api/v1/invoices/{invoice.id}", headers=auth(resident))
     assert response.status_code == 404
+
+
+async def test_guard_has_no_access_to_finances(client: AsyncClient, guard: User) -> None:
+    for url in ("/api/v1/invoices", "/api/v1/payments", "/api/v1/billing/accounts/1"):
+        response = await client.get(url, headers=auth(guard))
+        assert response.status_code == 403, url

@@ -6,7 +6,7 @@ import { createBrowserRouter, RouterProvider } from 'react-router'
 
 import { AuthProvider } from '@/auth/AuthProvider'
 import { RequireAuth, RequireRole } from '@/auth/RequireAuth'
-import { ACCOUNTANTS, GUARDS, MANAGERS, STAFF } from '@/auth/useAuth'
+import { ACCOUNTANTS, GUARDS, HOUSEHOLD, MANAGERS, STAFF } from '@/auth/useAuth'
 import { AppLayout } from '@/layout/AppLayout'
 import { HomePage } from '@/pages/HomePage'
 import { LoginPage } from '@/pages/LoginPage'
@@ -49,13 +49,13 @@ const router = createBrowserRouter([
       { path: 'apartments', element: <RequireRole roles={OFFICE}><ApartmentsPage /></RequireRole> },
       { path: 'apartments/:id', element: <RequireRole roles={STAFF}><ApartmentPage /></RequireRole> },
       { path: 'users', element: <RequireRole roles={MANAGERS}><UsersPage /></RequireRole> },
-      { path: 'meters', element: <MetersPage /> },
+      { path: 'meters', element: <RequireRole roles={HOUSEHOLD}><MetersPage /></RequireRole> },
       { path: 'readings', element: <RequireRole roles={OFFICE}><ReadingsJournalPage /></RequireRole> },
       { path: 'billing', element: <RequireRole roles={ACCOUNTANTS}><BillingPage /></RequireRole> },
       { path: 'tariffs', element: <RequireRole roles={OFFICE}><TariffsPage /></RequireRole> },
-      { path: 'invoices', element: <InvoicesPage /> },
-      { path: 'invoices/:id', element: <InvoicePage /> },
-      { path: 'payments', element: <PaymentsPage /> },
+      { path: 'invoices', element: <RequireRole roles={HOUSEHOLD}><InvoicesPage /></RequireRole> },
+      { path: 'invoices/:id', element: <RequireRole roles={HOUSEHOLD}><InvoicePage /></RequireRole> },
+      { path: 'payments', element: <RequireRole roles={HOUSEHOLD}><PaymentsPage /></RequireRole> },
       { path: 'debtors', element: <RequireRole roles={OFFICE}><DebtorsPage /></RequireRole> },
       { path: 'tickets', element: <TicketsPage /> },
       { path: 'tickets/:id', element: <TicketPage /> },

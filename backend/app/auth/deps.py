@@ -49,3 +49,10 @@ AccountantUser = Annotated[User, Depends(require_roles(UserRole.ADMIN, UserRole.
 GuardUser = Annotated[
     User, Depends(require_roles(UserRole.ADMIN, UserRole.MANAGER, UserRole.SECURITY))
 ]
+# Финансы и счётчики жителей: всем, кроме охраны (ей эти данные не нужны).
+HouseholdUser = Annotated[
+    User,
+    Depends(
+        require_roles(UserRole.ADMIN, UserRole.MANAGER, UserRole.ACCOUNTANT, UserRole.RESIDENT)
+    ),
+]

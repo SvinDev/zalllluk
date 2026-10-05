@@ -1968,7 +1968,7 @@ export interface components {
             value: number | string;
             /**
              * Taken At
-             * @description Момент снятия показаний; по умолчанию — сейчас
+             * @description Момент снятия показаний (только для сотрудников УК); по умолчанию — сейчас
              */
             taken_at?: string | null;
         };

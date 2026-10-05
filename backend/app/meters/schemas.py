@@ -55,7 +55,8 @@ class MeterRead(Schema):
 class ReadingCreate(BaseModel):
     value: ReadingValue
     taken_at: AwareDatetime | None = Field(
-        default=None, description="Момент снятия показаний; по умолчанию — сейчас"
+        default=None,
+        description="Момент снятия показаний (только для сотрудников УК); по умолчанию — сейчас",
     )
 
 

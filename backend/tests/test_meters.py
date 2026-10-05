@@ -33,7 +33,7 @@ async def test_register_meter(client: AsyncClient, session: AsyncSession, manage
 
 
 async def test_resident_submits_reading_and_validation(
-    client: AsyncClient, session: AsyncSession, resident: User
+    client: AsyncClient, session: AsyncSession, resident: User, manager: User
 ) -> None:
     apartment = await make_apartment(session, residents=[resident])
     meter = await make_meter(session, apartment, initial_value=100)
@@ -42,9 +42,10 @@ async def test_resident_submits_reading_and_validation(
     below_initial = await client.post(url, json={"value": "99"}, headers=auth(resident))
     assert below_initial.status_code == 422
 
+    # Дату указывает только сотрудник — и она не может быть в будущем.
     future = (datetime.now(UTC) + timedelta(days=1)).isoformat()
     in_future = await client.post(
-        url, json={"value": "120", "taken_at": future}, headers=auth(resident)
+        url, json={"value": "120", "taken_at": future}, headers=auth(manager)
     )
     assert in_future.status_code == 422
 
@@ -161,3 +162,24 @@ async def test_meter_with_readings_cannot_be_deleted(
     empty = await make_meter(session)
     response = await client.delete(f"/api/v1/meters/{empty.id}", headers=auth(manager))
     assert response.status_code == 204
+
+
+async def test_resident_cannot_backdate_reading(
+    client: AsyncClient, session: AsyncSession, resident: User
+) -> None:
+    apartment = await make_apartment(session, residents=[resident])
+    meter = await make_meter(session, apartment)
+    backdated = (datetime.now(UTC) - timedelta(days=40)).isoformat()
+    response = await client.post(
+        f"/api/v1/meters/{meter.id}/readings",
+        json={"value": "1", "taken_at": backdated},
+        headers=auth(resident),
+    )
+    assert response.status_code == 201
+    taken_at = datetime.fromisoformat(response.json()["taken_at"])
+    assert datetime.now(UTC) - taken_at < timedelta(minutes=1)
+
+
+async def test_guard_has_no_access_to_meters(client: AsyncClient, guard: User) -> None:
+    response = await client.get("/api/v1/meters", headers=auth(guard))
+    assert response.status_code == 403

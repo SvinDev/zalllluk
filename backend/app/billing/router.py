@@ -4,7 +4,7 @@ from typing import Annotated
 
 from fastapi import APIRouter, Depends, Query, Response, status
 
-from app.auth.deps import AccountantUser, CurrentUser, SessionDep, StaffUser
+from app.auth.deps import AccountantUser, HouseholdUser, SessionDep, StaffUser
 from app.billing import service
 from app.billing.models import Invoice, InvoiceStatus, Payment
 from app.billing.periods import Period
@@ -111,7 +111,7 @@ async def issue_period(session: SessionDep, _: AccountantUser, data: IssueReques
     summary="Состояние лицевого счёта",
 )
 async def account_summary(
-    session: SessionDep, user: CurrentUser, apartment_id: int
+    session: SessionDep, user: HouseholdUser, apartment_id: int
 ) -> AccountSummary:
     await get_apartment_for_user(session, user, apartment_id)
     return await service.account_summary(session, apartment_id)
@@ -146,7 +146,7 @@ async def debtors(
 @router.get("/invoices", response_model=Page[InvoiceRead], summary="Квитанции")
 async def list_invoices(
     session: SessionDep,
-    user: CurrentUser,
+    user: HouseholdUser,
     page: Annotated[PageParams, Depends(page_params)],
     period: Annotated[Period | None, Query(description="YYYY-MM")] = None,
     invoice_status: Annotated[InvoiceStatus | None, Query(alias="status")] = None,
@@ -189,7 +189,7 @@ def _invoice_detail(invoice: Invoice) -> InvoiceDetail:
 
 
 @router.get("/invoices/{invoice_id}", response_model=InvoiceDetail, summary="Квитанция")
-async def get_invoice(session: SessionDep, user: CurrentUser, invoice_id: int) -> InvoiceDetail:
+async def get_invoice(session: SessionDep, user: HouseholdUser, invoice_id: int) -> InvoiceDetail:
     invoice = await service.get_invoice_for_user(session, user, invoice_id)
     return _invoice_detail(invoice)
 
@@ -224,7 +224,7 @@ async def cancel_invoice(session: SessionDep, user: AccountantUser, invoice_id: 
 @router.get("/payments", response_model=Page[PaymentRead], summary="Оплаты")
 async def list_payments(
     session: SessionDep,
-    user: CurrentUser,
+    user: HouseholdUser,
     page: Annotated[PageParams, Depends(page_params)],
     apartment_id: int | None = None,
     building_id: int | None = None,
