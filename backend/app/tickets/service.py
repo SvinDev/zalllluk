@@ -60,6 +60,7 @@ def tickets_query(
     category: str | None = None,
     priority: str | None = None,
     building_id: int | None = None,
+    apartment_id: int | None = None,
     assignee_id: int | None = None,
     only_open: bool = False,
     overdue: bool = False,
@@ -81,6 +82,8 @@ def tickets_query(
         stmt = stmt.where(Ticket.priority == priority)
     if building_id is not None:
         stmt = stmt.where(Ticket.building_id == building_id)
+    if apartment_id is not None:
+        stmt = stmt.where(Ticket.apartment_id == apartment_id)
     if assignee_id is not None:
         stmt = stmt.where(Ticket.assignee_id == assignee_id)
     if search:

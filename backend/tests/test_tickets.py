@@ -140,6 +140,11 @@ async def test_ticket_visibility_and_filters(
     )
     assert foreign_create.status_code == 404
 
+    by_apartment = await client.get(
+        "/api/v1/tickets", params={"apartment_id": foreign.id}, headers=auth(manager)
+    )
+    assert [t["id"] for t in by_apartment.json()["items"]] == [other["id"]]
+
     by_category = await client.get(
         "/api/v1/tickets", params={"category": "elevator"}, headers=auth(manager)
     )
