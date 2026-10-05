@@ -59,6 +59,13 @@ class ApartmentUpdate(BaseModel):
     owner_name: Annotated[str, Field(max_length=255)] | None = None
 
 
+class ApartmentBrief(Schema):
+    id: int
+    number: str
+    account_number: str
+    building: BuildingBrief
+
+
 class ApartmentRead(Schema):
     id: int
     building_id: int

@@ -5,7 +5,7 @@ from typing import Annotated
 from pydantic import AwareDatetime, BaseModel, Field, model_validator
 
 from app.core.schemas import Schema
-from app.housing.schemas import BuildingBrief
+from app.housing.schemas import ApartmentBrief
 from app.meters.models import MeterKind, ReadingSource
 
 ReadingValue = Annotated[Decimal, Field(ge=0, max_digits=14, decimal_places=3)]
@@ -29,13 +29,6 @@ class MeterUpdate(BaseModel):
     installed_at: date | None = None
     verification_due: date | None = None
     is_active: bool | None = None
-
-
-class ApartmentBrief(Schema):
-    id: int
-    number: str
-    account_number: str
-    building: BuildingBrief
 
 
 class LastReading(Schema):

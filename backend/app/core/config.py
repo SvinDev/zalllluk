@@ -1,5 +1,6 @@
 from functools import lru_cache
 from typing import Annotated, Literal
+from zoneinfo import ZoneInfo
 
 from pydantic import Field, field_validator, model_validator
 from pydantic_settings import BaseSettings, NoDecode, SettingsConfigDict
@@ -32,6 +33,9 @@ class Settings(BaseSettings):
     database_url: str = "postgresql+asyncpg://uk:uk@localhost:5432/uk"
     database_echo: bool = False
 
+    # Часовой пояс УК: по нему режутся расчётные периоды (месяцы) для показаний.
+    timezone: str = "Europe/Moscow"
+
     secret_key: str = _DEFAULT_SECRET
     access_token_ttl_minutes: int = 60 * 12
 
@@ -59,6 +63,16 @@ class Settings(BaseSettings):
         if len(value) < 32:
             raise ValueError("SECRET_KEY должен быть не короче 32 символов")
         return value
+
+    @field_validator("timezone")
+    @classmethod
+    def _known_timezone(cls, value: str) -> str:
+        ZoneInfo(value)  # бросит исключение на неизвестной зоне
+        return value
+
+    @property
+    def tz(self) -> ZoneInfo:
+        return ZoneInfo(self.timezone)
 
     @model_validator(mode="after")
     def _production_guard(self) -> "Settings":

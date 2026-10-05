@@ -1,5 +1,6 @@
 """Единая точка импорта всех ORM-моделей — нужна Alembic и тестам для полного metadata."""
 
+from app.billing.models import Invoice, InvoiceLine, Payment, Tariff
 from app.core.database import Base
 from app.housing.models import Apartment, Building, apartment_residents
 from app.integrations.models import ApiKey, MeterDataSource
@@ -11,9 +12,13 @@ __all__ = [
     "ApiKey",
     "Base",
     "Building",
+    "Invoice",
+    "InvoiceLine",
     "Meter",
     "MeterDataSource",
     "MeterReading",
+    "Payment",
+    "Tariff",
     "User",
     "apartment_residents",
 ]
