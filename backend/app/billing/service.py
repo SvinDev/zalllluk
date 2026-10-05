@@ -8,7 +8,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import joinedload, selectinload
 
 from app.billing import periods
-from app.billing.calculator import InvoiceCalculator
+from app.billing.calculator import InvoiceCalculator, money
 from app.billing.models import (
     POSTED_STATUSES,
     Invoice,
@@ -120,7 +120,12 @@ async def run_billing(
 
     # Тариф применяется к периоду, если действует на его первое число:
     # так смена ставки «с 1 июля» не приводит к двойному начислению за месяц.
-    tariffs = list(await session.scalars(tariffs_query(active_on=period, building_id=None)))
+    # Порядок строк в квитанции — порядок заведения тарифов.
+    tariffs = list(
+        await session.scalars(
+            tariffs_query(active_on=period, building_id=None).order_by(None).order_by(Tariff.id)
+        )
+    )
 
     meters_by_apartment: dict[int, list[Meter]] = defaultdict(list)
     for meter in await session.scalars(
@@ -199,7 +204,7 @@ async def account_summary(session: AsyncSession, apartment_id: int) -> AccountSu
             )
         )
     ).one()
-    charged, paid = Decimal(charged or 0), Decimal(paid or 0)
+    charged, paid = money(Decimal(charged or 0)), money(Decimal(paid or 0))
     return AccountSummary(
         apartment_id=apartment_id,
         charged=charged,

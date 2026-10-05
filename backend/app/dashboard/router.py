@@ -11,6 +11,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.auth.deps import SessionDep, StaffUser
 from app.billing import periods
+from app.billing.calculator import money
 from app.billing.models import POSTED_STATUSES, Invoice, Payment
 from app.billing.service import debtors_query
 from app.core.config import get_settings
@@ -133,7 +134,11 @@ async def dashboard(session: SessionDep, _: StaffUser) -> Dashboard:
                 Payment.paid_at >= start, Payment.paid_at < end
             )
         )
-        history.append(BillingMonth(period=period, charged=charged or 0, paid=paid or 0))
+        history.append(
+            BillingMonth(
+                period=period, charged=money(Decimal(charged or 0)), paid=money(Decimal(paid or 0))
+            )
+        )
 
     passes = PassStats(
         pending=await _count(
@@ -158,6 +163,8 @@ async def dashboard(session: SessionDep, _: StaffUser) -> Dashboard:
         ),
         tickets=tickets,
         readings=readings,
-        billing=BillingStats(total_debt=total_debt, debtors=debtors, history=history),
+        billing=BillingStats(
+            total_debt=money(Decimal(total_debt)), debtors=debtors, history=history
+        ),
         passes=passes,
     )
