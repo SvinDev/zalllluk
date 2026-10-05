@@ -10,8 +10,10 @@ on:
 permissions:
   contents: write
 
+# Своя группа: имя «pages» может совпасть со встроенной публикацией GitHub Pages,
+# и cancel-in-progress отменял бы её.
 concurrency:
-  group: pages
+  group: demo-pages-build
   cancel-in-progress: true
 
 jobs:
