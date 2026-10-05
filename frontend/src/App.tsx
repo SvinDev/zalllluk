@@ -6,7 +6,7 @@ import { createBrowserRouter, RouterProvider } from 'react-router'
 
 import { AuthProvider } from '@/auth/AuthProvider'
 import { RequireAuth, RequireRole } from '@/auth/RequireAuth'
-import { ACCOUNTANTS, MANAGERS, STAFF } from '@/auth/useAuth'
+import { ACCOUNTANTS, GUARDS, MANAGERS, STAFF } from '@/auth/useAuth'
 import { AppLayout } from '@/layout/AppLayout'
 import { HomePage } from '@/pages/HomePage'
 import { LoginPage } from '@/pages/LoginPage'
@@ -24,6 +24,13 @@ const InvoicesPage = lazy(() => import('@/pages/billing/InvoicesPage'))
 const InvoicePage = lazy(() => import('@/pages/billing/InvoicePage'))
 const PaymentsPage = lazy(() => import('@/pages/billing/PaymentsPage'))
 const DebtorsPage = lazy(() => import('@/pages/billing/DebtorsPage'))
+const TicketsPage = lazy(() => import('@/pages/tickets/TicketsPage'))
+const TicketPage = lazy(() => import('@/pages/tickets/TicketPage'))
+const PassesPage = lazy(() => import('@/pages/passes/PassesPage'))
+const GuardPage = lazy(() => import('@/pages/passes/GuardPage'))
+const AnnouncementsPage = lazy(() => import('@/pages/AnnouncementsPage'))
+const IntegrationsPage = lazy(() => import('@/pages/IntegrationsPage'))
+const ProfilePage = lazy(() => import('@/pages/ProfilePage'))
 
 const OFFICE = ['admin', 'manager', 'accountant'] as const
 
@@ -50,6 +57,13 @@ const router = createBrowserRouter([
       { path: 'invoices/:id', element: <InvoicePage /> },
       { path: 'payments', element: <PaymentsPage /> },
       { path: 'debtors', element: <RequireRole roles={OFFICE}><DebtorsPage /></RequireRole> },
+      { path: 'tickets', element: <TicketsPage /> },
+      { path: 'tickets/:id', element: <TicketPage /> },
+      { path: 'passes', element: <PassesPage /> },
+      { path: 'guard', element: <RequireRole roles={GUARDS}><GuardPage /></RequireRole> },
+      { path: 'announcements', element: <AnnouncementsPage /> },
+      { path: 'integrations', element: <RequireRole roles={['admin']}><IntegrationsPage /></RequireRole> },
+      { path: 'profile', element: <ProfilePage /> },
       { path: '*', element: <NotFoundPage /> },
     ],
   },
