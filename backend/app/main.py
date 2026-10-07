@@ -9,6 +9,7 @@ from app.api import api_router
 from app.core.config import get_settings
 from app.core.database import SessionFactory, engine
 from app.core.errors import register_error_handlers
+from app.core.spa import mount_spa
 from app.integrations.scheduler import meter_sync_worker
 
 
@@ -44,6 +45,9 @@ def create_app() -> FastAPI:
         async with SessionFactory() as session:
             await session.execute(text("SELECT 1"))
         return {"status": "ok"}
+
+    if settings.static_dir is not None:
+        mount_spa(app, settings.static_dir)
 
     return app
 

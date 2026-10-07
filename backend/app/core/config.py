@@ -1,9 +1,11 @@
 from functools import lru_cache
+from pathlib import Path
 from typing import Annotated, Literal
 from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
 from pydantic import Field, field_validator, model_validator
 from pydantic_settings import BaseSettings, NoDecode, SettingsConfigDict
+from sqlalchemy.engine import make_url
 
 _DEFAULT_SECRET = "insecure-dev-secret-key-change-me-0123456789"
 
@@ -43,6 +45,10 @@ class Settings(BaseSettings):
         default_factory=lambda: ["http://localhost:5173"]
     )
 
+    # Каталог собранного фронтенда: если задан, API сам отдаёт SPA (образ «всё в одном»
+    # для PaaS). В docker-compose фронтенд отдаёт nginx, и каталог не задаётся.
+    static_dir: Path | None = None
+
     # Фоновый опрос внешних систем учёта (АСКУЭ, IoT-шлюзы).
     meter_sync_enabled: bool = True
     meter_sync_interval_minutes: int = 30
@@ -56,6 +62,23 @@ class Settings(BaseSettings):
         if isinstance(value, str):
             return [origin.strip() for origin in value.split(",") if origin.strip()]
         return value
+
+    @field_validator("database_url")
+    @classmethod
+    def _asyncpg_url(cls, value: str) -> str:
+        """PaaS (Railway, Render, Heroku) выдают URL вида postgres://…?sslmode=require.
+
+        Приложению нужен драйвер asyncpg, а он вместо sslmode понимает параметр ssl.
+        """
+        url = make_url(value)
+        if url.drivername in {"postgres", "postgresql"}:
+            url = url.set(drivername="postgresql+asyncpg")
+        if url.drivername == "postgresql+asyncpg" and "sslmode" in url.query:
+            query = dict(url.query)
+            sslmode = query.pop("sslmode")
+            query.setdefault("ssl", sslmode)
+            url = url.set(query=query)
+        return url.render_as_string(hide_password=False)
 
     @field_validator("secret_key")
     @classmethod

@@ -1,7 +1,7 @@
 """Служебные команды.
 
 python -m app.cli create-admin --email admin@uk.ru --name "Иван Иванов"
-python -m app.cli seed-demo
+python -m app.cli seed-demo [--if-empty]
 python -m app.cli openapi > ../frontend/openapi.json
 """
 
@@ -32,11 +32,14 @@ async def _create_admin(email: str, name: str, password: str) -> None:
         print(f"Администратор создан: {user.email} (id={user.id})")
 
 
-async def _seed_demo() -> None:
+async def _seed_demo(*, if_empty: bool) -> None:
     from app.demo import seed  # импорт здесь: демо-данные не нужны в рабочем коде
 
     async with SessionFactory() as session:
         if await session.scalar(select(Building.id).limit(1)) is not None:
+            if if_empty:
+                print("База не пустая — демо-данные не загружаются")
+                return
             raise AppError("База не пустая — демо-данные загружаются только в чистую БД")
         summary = await seed(session)
         await session.commit()
@@ -59,7 +62,12 @@ def main(argv: list[str] | None = None) -> int:
     admin.add_argument("--name", default="Администратор")
     admin.add_argument("--password", help="Если не указан — будет запрошен интерактивно")
 
-    commands.add_parser("seed-demo", help="Заполнить пустую БД демонстрационными данными")
+    seed_demo = commands.add_parser("seed-demo", help="Заполнить пустую БД демо-данными")
+    seed_demo.add_argument(
+        "--if-empty",
+        action="store_true",
+        help="Если в базе уже есть данные — молча пропустить (для автоматического запуска)",
+    )
     commands.add_parser("openapi", help="Вывести OpenAPI-схему (для генерации клиента фронтенда)")
 
     args = parser.parse_args(argv)
@@ -68,7 +76,7 @@ def main(argv: list[str] | None = None) -> int:
             password = args.password or getpass.getpass("Пароль (мин. 8 символов): ")
             asyncio.run(_run(_create_admin(args.email, args.name, password)))
         elif args.command == "seed-demo":
-            asyncio.run(_run(_seed_demo()))
+            asyncio.run(_run(_seed_demo(if_empty=args.if_empty)))
         elif args.command == "openapi":
             from app.main import app
 

@@ -57,6 +57,28 @@
 Подробности — [.devcontainer/README.md](.devcontainer/README.md).
 Подходит для тестирования; Codespace засыпает без активности, для постоянной работы нужен сервер.
 
+## Railway
+
+Постоянно работающий сайт с публичной ссылкой и управляемым PostgreSQL. Используется
+образ «всё в одном» (корневой `Dockerfile`: API сам отдаёт фронтенд), настройки сборки
+и деплоя — в [`railway.json`](railway.json): перед запуском каждой версии применяются
+миграции (`predeploy.sh`), готовность проверяется по `/api/health`.
+
+1. [railway.com](https://railway.com) → **New Project → Deploy from GitHub repo** → этот репозиторий.
+2. В проекте: **Create → Database → PostgreSQL**.
+3. Сервис приложения → **Variables → Raw Editor**, вставить и сохранить:
+   ```
+   DATABASE_URL=${{Postgres.DATABASE_URL}}
+   SECRET_KEY=<случайная строка от 32 символов: openssl rand -base64 48>
+   SEED_DEMO=true
+   ```
+4. Сервис приложения → **Settings → Networking → Generate Domain**.
+
+Через пару минут сайт откроется по выданной ссылке, демо-доступы — ниже.
+`SEED_DEMO=true` загружает демо-данные только в пустую базу; для рабочей УК уберите
+переменную до первого деплоя. Данные хранятся в PostgreSQL Railway и переживают
+передеплой; каждый push в ветку деплоится автоматически.
+
 ## Быстрый старт (Docker)
 
 ```bash
@@ -197,6 +219,12 @@ Authorization: Bearer <token>
 Все параметры — переменные окружения (см. `.env.example` и `backend/.env.example`):
 `DATABASE_URL`, `SECRET_KEY` (в production обязателен свой), `ACCESS_TOKEN_TTL_MINUTES`,
 `CORS_ORIGINS`, `TIMEZONE`, `METER_SYNC_*`, реквизиты УК `COMPANY_*` для квитанций и QR.
+`DATABASE_URL` принимается и в формате PaaS (`postgres://…?sslmode=require`).
+
+Только для образа «всё в одном» (корневой `Dockerfile`): `STATIC_DIR` — каталог
+собранного фронтенда, который отдаёт API (в образе уже задан), `PORT` — порт
+(задаёт платформа), `SEED_DEMO=true` — загрузить демо-данные в пустую БД на шаге
+`predeploy.sh`.
 
 ## Что дальше
 

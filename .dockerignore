@@ -1,0 +1,15 @@
+# Контекст корневого Dockerfile (образ «всё в одном»). У backend/ и frontend/ свои .dockerignore.
+.git
+.github
+.devcontainer
+.env
+.env.*
+backups
+**/node_modules
+**/dist
+**/.venv
+**/__pycache__
+**/.pytest_cache
+**/.mypy_cache
+**/.ruff_cache
+backend/tests
