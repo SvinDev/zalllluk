@@ -53,7 +53,8 @@
 
 Полноценный стек (PostgreSQL, API, веб) в облачной среде GitHub: поднимается сам при
 запуске Codespace, при пустой базе загружает демо-данные, **данные сохраняются между
-остановками**. Подробности — [.devcontainer/README.md](.devcontainer/README.md).
+остановками** (но пропадают при удалении Codespace и Full Rebuild).
+Подробности — [.devcontainer/README.md](.devcontainer/README.md).
 Подходит для тестирования; Codespace засыпает без активности, для постоянной работы нужен сервер.
 
 ## Быстрый старт (Docker)

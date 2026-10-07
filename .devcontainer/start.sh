@@ -1,9 +1,13 @@
 #!/usr/bin/env bash
 # Запуск стека при каждом старте Codespace.
-# Данные PostgreSQL лежат в Docker-томе и переживают остановку Codespace;
-# пропадают только при удалении Codespace или по `make reset-data`.
+# Данные PostgreSQL лежат в Docker-томе и переживают остановку и перезапуск Codespace;
+# пропадают при удалении Codespace (в т.ч. автоудалении давно остановленного),
+# Full Rebuild контейнера и `make reset-data`.
 set -euo pipefail
 cd "$(dirname "$0")/.."
+
+# Повторно — на случай, если postCreateCommand не отработал: без .env compose не стартует.
+bash .devcontainer/ensure-env.sh
 
 echo "Жду Docker..."
 for _ in $(seq 1 60); do
@@ -32,7 +36,7 @@ if [[ "${users//[[:space:]]/}" == "0" ]]; then
 fi
 
 if [[ -n "${CODESPACE_NAME:-}" ]]; then
-  url="https://${CODESPACE_NAME}-8080.${GITHUB_CODESPACES_PORT_FORWARDING_DOMAIN}"
+  url="https://${CODESPACE_NAME}-8080.${GITHUB_CODESPACES_PORT_FORWARDING_DOMAIN:-app.github.dev}"
 else
   url="http://localhost:8080"
 fi
