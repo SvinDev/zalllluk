@@ -1,0 +1,29 @@
+{
+  "name": "УК Онлайн",
+  "image": "mcr.microsoft.com/devcontainers/base:ubuntu-24.04",
+  "features": {
+    // Свой Docker внутри Codespace: стек поднимается тем же docker-compose.yml, что и на сервере.
+    "ghcr.io/devcontainers/features/docker-in-docker:2": {},
+    "ghcr.io/devcontainers/features/node:1": { "version": "22" }
+  },
+  "hostRequirements": { "cpus": 2, "memory": "4gb" },
+  "forwardPorts": [8080],
+  "portsAttributes": {
+    "8080": { "label": "УК Онлайн", "onAutoForward": "notify" }
+  },
+  // Один раз при создании: .env с собственным SECRET_KEY и uv для бэкенда.
+  "postCreateCommand": "bash .devcontainer/post-create.sh",
+  // При каждом старте: поднять стек; при пустой базе — загрузить демо-данные.
+  "postStartCommand": "bash .devcontainer/start.sh",
+  "customizations": {
+    "codespaces": { "openFiles": [".devcontainer/README.md"] },
+    "vscode": {
+      "extensions": [
+        "ms-python.python",
+        "charliermarsh.ruff",
+        "dbaeumer.vscode-eslint",
+        "ms-azuretools.vscode-docker"
+      ]
+    }
+  }
+}

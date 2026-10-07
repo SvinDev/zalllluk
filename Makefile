@@ -1,4 +1,5 @@
-.PHONY: help install dev-api dev-web test lint format migrate migration seed openapi up down logs
+.PHONY: help install dev-api dev-web test lint format migrate migration seed openapi up down logs \
+	docker-seed backup restore reset-data
 
 help:  ## Список команд
 	@grep -E '^[a-z-]+:.*##' $(MAKEFILE_LIST) | awk -F':.*## ' '{printf "  \033[36m%-12s\033[0m %s\n", $$1, $$2}'
@@ -45,3 +46,21 @@ down:  ## Остановить Docker-окружение
 
 logs:  ## Логи Docker-окружения
 	docker compose logs -f api web
+
+docker-seed:  ## Демо-данные в пустую БД Docker-окружения
+	docker compose --profile demo run --rm seed
+
+backup:  ## Бэкап БД Docker-окружения в backups/
+	@mkdir -p backups
+	docker compose exec -T db sh -c 'pg_dump -U "$$POSTGRES_USER" -Fc "$$POSTGRES_DB"' \
+		> backups/uk-$$(date +%Y%m%d-%H%M%S).dump
+	@ls -1t backups | head -1
+
+restore:  ## Восстановить БД из бэкапа: make restore f=backups/uk-....dump
+	@test -n "$(f)" || { echo "Укажите файл: make restore f=backups/<файл>.dump"; exit 1; }
+	docker compose exec -T db sh -c \
+		'pg_restore -U "$$POSTGRES_USER" -d "$$POSTGRES_DB" --clean --if-exists --no-owner' < $(f)
+
+reset-data:  ## Удалить ВСЕ данные Docker-окружения (том БД)
+	@printf "Удалить все данные БД? [y/N] "; read answer; [ "$$answer" = y ]
+	docker compose down -v

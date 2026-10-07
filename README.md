@@ -47,6 +47,15 @@
 возвращает исходный набор. Публикация — workflow `pages.yml` при изменениях фронтенда
 (`npm run build:pages`, ветка `gh-pages`).
 
+## GitHub Codespaces
+
+[![Open in GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://codespaces.new/SvinDev/zalllluk?quickstart=1)
+
+Полноценный стек (PostgreSQL, API, веб) в облачной среде GitHub: поднимается сам при
+запуске Codespace, при пустой базе загружает демо-данные, **данные сохраняются между
+остановками**. Подробности — [.devcontainer/README.md](.devcontainer/README.md).
+Подходит для тестирования; Codespace засыпает без активности, для постоянной работы нужен сервер.
+
 ## Быстрый старт (Docker)
 
 ```bash
